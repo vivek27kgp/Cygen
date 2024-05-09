@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF OCR</title>
+    <!-- <style>
+      body {
+        text-align: center;
+      }
+    </style> -->
+  </head>
+  <body>
+    <h1>PDF OCR</h1>
+    <input type="file" id="pdfInput" accept=".pdf" />
+    <button onclick="handleOCR()">Perform OCR</button>
+    <div style="margin: 10px">Result:</div>
+    <div id="ocrResult"></div>
+    <a id="downloadLink" style="display: none">Download OCR Result</a>
+
+    <script>
+      function handleOCR() {
+        const pdfFile = document.getElementById("pdfInput").files[0];
+        if (!pdfFile) {
+          alert("Please select a PDF file.");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("pdf", pdfFile);
+
+        fetch("/perform-ocr", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const text = data.text;
+            document.getElementById("ocrResult").innerText = text;
+            document.getElementById("ocrResult").style.display = "block";
+            document.getElementById("ocrResult").style.border =
+              "2px solid black";
+
+            const downloadLink = document.getElementById("downloadLink");
+            const blob = new Blob([text], { type: "text/plain" });
+            const url = window.URL.createObjectURL(blob);
+            downloadLink.href = url;
+            downloadLink.download = "ocr_result.txt";
+            downloadLink.style.display = "block";
+          })
+          .catch((error) => {
+            console.error("OCR error:", error);
+            alert("Error performing OCR.");
+          });
+      }
+    </script>
+  </body>
+</html>
